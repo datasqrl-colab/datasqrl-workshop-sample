@@ -1,0 +1,26 @@
+-- Sink definitions for the test environment.
+-- Writes enriched order items to a JSONL file on the local filesystem.
+
+CREATE TABLE EnrichedOrderItemsOutput (
+    order_id STRING,
+    customer_id STRING,
+    order_item_id INT,
+    product_id STRING,
+    seller_id STRING,
+    order_purchase_timestamp TIMESTAMP(3),
+    shipping_limit_date TIMESTAMP(3),
+    price DOUBLE,
+    freight_value DOUBLE,
+    customer_zip STRING,
+    customer_city STRING,
+    customer_state STRING,
+    product_category_name STRING,
+    product_weight_g INT,
+    product_length_cm INT,
+    product_height_cm INT,
+    product_width_cm INT
+) WITH (
+    'connector' = 'filesystem',
+    'path' = 'data/enriched-order-items',
+    'format' = 'json'
+);

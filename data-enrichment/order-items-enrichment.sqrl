@@ -1,0 +1,82 @@
+IMPORT catalog.ecommerce-sources.orders-{{environment}} AS orders;
+IMPORT catalog.ecommerce-sources.masterdata-{{environment}} AS masterdata;
+IMPORT connectors.sinks-{{environment}} AS sinks;
+
+/* ========================================
+   PART 1: Flatten Orders into Order Items
+   ========================================
+   Use UNNEST to explode the nested items array in each order event
+   into individual order item rows, preserving the order timestamp
+   so it can be used for temporal joins downstream.
+*/
+OrderItems := SELECT
+    e.order_id,
+    e.customer_id,
+    e.order_purchase_timestamp,
+    item.order_item_id,
+    item.product_id,
+    item.seller_id,
+    item.shipping_limit_date,
+    item.price,
+    item.freight_value
+FROM orders.OrderEvents AS e
+CROSS JOIN UNNEST(e.items) AS item;
+
+/* ========================================
+   PART 2: Enrich with Customer & Product Data
+   ========================================
+   Temporal joins capture the state of customer and product records
+   at the time of the order — ensuring historical accuracy even when
+   master data changes after the order was placed.
+*/
+EnrichedOrderItems := SELECT
+    oi.order_id,
+    oi.customer_id,
+    oi.order_item_id,
+    oi.product_id,
+    oi.seller_id,
+    oi.order_purchase_timestamp,
+    oi.shipping_limit_date,
+    oi.price,
+    oi.freight_value,
+    c.customer_zip_code_prefix AS customer_zip,
+    c.customer_city,
+    c.customer_state,
+    p.product_category_name,
+    p.product_weight_g,
+    p.product_length_cm,
+    p.product_height_cm,
+    p.product_width_cm
+FROM OrderItems AS oi
+JOIN masterdata.Customers FOR SYSTEM_TIME AS OF oi.order_purchase_timestamp AS c
+    ON oi.customer_id = c.customer_id
+JOIN masterdata.Products FOR SYSTEM_TIME AS OF oi.order_purchase_timestamp AS p
+    ON oi.product_id = p.product_id;
+
+/* ========================================
+   PART 3: Export
+   ========================================
+   Export enriched order items to a JSONL file for downstream consumers.
+*/
+EXPORT EnrichedOrderItems TO sinks.EnrichedOrderItemsOutput;
+
+/* ========================================
+   TEST CASES
+   ======================================== */
+
+/*+test*/
+EnrichedOrderItemsTest := SELECT
+    order_id,
+    customer_id,
+    order_item_id,
+    product_id,
+    customer_zip,
+    customer_city,
+    customer_state,
+    product_category_name,
+    product_weight_g,
+    product_length_cm,
+    product_height_cm,
+    product_width_cm
+FROM EnrichedOrderItems
+ORDER BY order_id ASC, order_item_id ASC;
