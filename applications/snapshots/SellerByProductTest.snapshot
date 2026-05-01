@@ -1,0 +1,85 @@
+{
+  "data" : {
+    "SellerByProductTest" : [ {
+      "seller_id" : "03bd479e1d9484cdb14104d3023f7321",
+      "product_id" : "6a83aaaaace0f050ef46ecf0fbb32854",
+      "product_category_name" : "auto",
+      "order_volume" : 1,
+      "total_price" : 119.9,
+      "total_freight_value" : 20.99,
+      "total_weight_g" : 350
+    }, {
+      "seller_id" : "05a48cc8859962767935ab9087417fbb",
+      "product_id" : "a7b497445896c24d425d100e4f03d8cd",
+      "product_category_name" : "garden_tools",
+      "order_volume" : 1,
+      "total_price" : 42.9,
+      "total_freight_value" : 16.49,
+      "total_weight_g" : 1130
+    }, {
+      "seller_id" : "1444c08e64d55fb3c25f0f09c07ffcf2",
+      "product_id" : "15151e8a937f6a4d1a4f0c03c765c6f2",
+      "product_category_name" : "garden_tools",
+      "order_volume" : 1,
+      "total_price" : 2749,
+      "total_freight_value" : 69.74,
+      "total_weight_g" : 50
+    }, {
+      "seller_id" : "166e8f1381e09651983c38b1f6f91c11",
+      "product_id" : "fb34a3bfc66ae09f045f9613fdb7bb5c",
+      "product_category_name" : "",
+      "order_volume" : 2,
+      "total_price" : 78.8,
+      "total_freight_value" : 30.2,
+      "total_weight_g" : 1200
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "product_id" : "15994dc9c5505e5feb9780945ed1cc8a",
+      "product_category_name" : "pet_shop",
+      "order_volume" : 1,
+      "total_price" : 289.9,
+      "total_freight_value" : 73.11,
+      "total_weight_g" : 9850
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "product_id" : "16734715511e4a408f9b534c748032f2",
+      "product_category_name" : "musical_instruments",
+      "order_volume" : 1,
+      "total_price" : 349.9,
+      "total_freight_value" : 15.81,
+      "total_weight_g" : 800
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "product_id" : "199a837d1162e5158f5ad3f96e35c01d",
+      "product_category_name" : "musical_instruments",
+      "order_volume" : 2,
+      "total_price" : 1249.8,
+      "total_freight_value" : 43.48,
+      "total_weight_g" : 1150
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "product_id" : "205604b962ebdae1c924e0d14e6e8ac1",
+      "product_category_name" : "kitchen_dining_laundry_garden_furniture",
+      "order_volume" : 3,
+      "total_price" : 131.7,
+      "total_freight_value" : 64.77,
+      "total_weight_g" : 11625
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "product_id" : "306e6b5dda3397e4a9312f94d82565b5",
+      "product_category_name" : "toys",
+      "order_volume" : 4,
+      "total_price" : 539.6,
+      "total_freight_value" : 118.2,
+      "total_weight_g" : 33800
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "product_id" : "3ce21e38e6a3060c20f4e74bdab770c8",
+      "product_category_name" : "baby",
+      "order_volume" : 14,
+      "total_price" : 852.6,
+      "total_freight_value" : 297.1,
+      "total_weight_g" : 77112
+    } ]
+  }
+}

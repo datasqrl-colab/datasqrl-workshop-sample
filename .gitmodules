@@ -4,3 +4,6 @@
 [submodule "data-enrichment/catalog"]
 	path = data-enrichment/catalog
 	url = git@github.com:datasqrl-colab/datasqrl-workshop-catalog.git
+[submodule "applications/catalog"]
+	path = applications/catalog
+	url = git@github.com:datasqrl-colab/datasqrl-workshop-catalog.git

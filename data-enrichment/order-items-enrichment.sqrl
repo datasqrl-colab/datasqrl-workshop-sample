@@ -72,7 +72,7 @@ _ValidOrderItems := SELECT
     order_purchase_timestamp, shipping_limit_date, price, freight_value,
     customer_zip, customer_city, customer_state,
     product_category_name, product_weight_g, product_length_cm, product_height_cm, product_width_cm,
-    now() AS producer_timestamp
+    CAST(order_purchase_timestamp AS TIMESTAMP(3)) AS producer_timestamp
 FROM _EnrichedOrderItems WHERE invalid_reason IS NULL;
 
 EXPORT _ValidOrderItems TO sinks.EnrichedOrderItems;

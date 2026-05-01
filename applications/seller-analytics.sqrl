@@ -1,0 +1,124 @@
+-- Seller Analytics: operational analytic tables for sellers
+-- Uses the EnrichedOrderItems data product from the catalog as the data source.
+-- Provides global and daily aggregations by product and by customer state.
+
+IMPORT catalog.ecommerce-data-products.enriched_order_item-{{environment}} AS sources;
+
+/* ========================================
+   PART 1: Global Aggregations
+   ======================================== */
+
+/** Cumulative sales metrics per seller and product.
+    Aggregates total order volume, revenue (price), freight costs, and shipping weight.
+    Use seller_id to filter results to a specific seller.
+ */
+/*+query_by_all(seller_id) */
+SellerByProduct := SELECT
+    seller_id,
+    product_id,
+    product_category_name,
+    COUNT(*) AS order_volume,
+    SUM(price) AS total_price,
+    SUM(freight_value) AS total_freight_value,
+    SUM(CAST(product_weight_g AS DOUBLE)) AS total_weight_g
+FROM sources.EnrichedOrderItems
+GROUP BY seller_id, product_id, product_category_name;
+
+/** Cumulative sales metrics per seller and customer state.
+    Aggregates total order volume, revenue (price), freight costs, and shipping weight.
+    Use seller_id to filter results to a specific seller.
+ */
+/*+query_by_all(seller_id) */
+SellerByState := SELECT
+    seller_id,
+    customer_state,
+    COUNT(*) AS order_volume,
+    SUM(price) AS total_price,
+    SUM(freight_value) AS total_freight_value,
+    SUM(CAST(product_weight_g AS DOUBLE)) AS total_weight_g
+FROM sources.EnrichedOrderItems
+GROUP BY seller_id, customer_state;
+
+/* ========================================
+   PART 2: Daily Tumble Window Aggregations
+   ======================================== */
+
+-- Daily TUMBLE window stream by seller and product using producer_timestamp as event time.
+-- Producer_timestamp represents when the record was produced and advances the watermark.
+_SellerByProductDailyStream := SELECT
+    seller_id,
+    product_id,
+    product_category_name,
+    window_start,
+    window_end,
+    window_time,
+    COUNT(*) AS order_volume,
+    SUM(price) AS total_price,
+    SUM(freight_value) AS total_freight_value,
+    SUM(CAST(product_weight_g AS DOUBLE)) AS total_weight_g
+FROM TABLE(
+    TUMBLE(
+        TABLE sources.EnrichedOrderItems,
+        DESCRIPTOR(producer_timestamp),
+        INTERVAL '1' DAY
+    )
+)
+GROUP BY seller_id, product_id, product_category_name, window_start, window_end, window_time;
+
+/** Daily aggregated sales metrics per seller and product using tumble windows.
+    Each row represents one calendar day of activity for a seller/product pair.
+    Use seller_id to filter results to a specific seller.
+ */
+/*+query_by_all(seller_id) */
+SellerByProductDaily := SELECT * FROM _SellerByProductDailyStream ORDER BY window_start DESC;
+
+-- Daily TUMBLE window stream by seller and customer state using producer_timestamp as event time.
+_SellerByStateDailyStream := SELECT
+    seller_id,
+    customer_state,
+    window_start,
+    window_end,
+    window_time,
+    COUNT(*) AS order_volume,
+    SUM(price) AS total_price,
+    SUM(freight_value) AS total_freight_value,
+    SUM(CAST(product_weight_g AS DOUBLE)) AS total_weight_g
+FROM TABLE(
+    TUMBLE(
+        TABLE sources.EnrichedOrderItems,
+        DESCRIPTOR(producer_timestamp),
+        INTERVAL '1' DAY
+    )
+)
+GROUP BY seller_id, customer_state, window_start, window_end, window_time;
+
+/** Daily aggregated sales metrics per seller and customer state using tumble windows.
+    Each row represents one calendar day of activity for a seller/customer-state pair.
+    Use seller_id to filter results to a specific seller.
+ */
+/*+query_by_all(seller_id) */
+SellerByStateDaily := SELECT * FROM _SellerByStateDailyStream ORDER BY window_start DESC;
+
+/* ========================================
+   TEST CASES
+   ======================================== */
+
+/*+test */
+SellerByProductTest := SELECT seller_id, product_id, product_category_name, order_volume, total_price, total_freight_value, total_weight_g
+    FROM SellerByProduct
+    ORDER BY seller_id ASC, product_id ASC;
+
+/*+test */
+SellerByStateTest := SELECT seller_id, customer_state, order_volume, total_price, total_freight_value, total_weight_g
+    FROM SellerByState
+    ORDER BY seller_id ASC, customer_state ASC;
+
+/*+test */
+SellerByProductDailyTest := SELECT seller_id, product_id, window_start, order_volume, total_price, total_freight_value, total_weight_g
+    FROM SellerByProductDaily
+    ORDER BY seller_id ASC, product_id ASC, window_start ASC;
+
+/*+test */
+SellerByStateDailyTest := SELECT seller_id, customer_state, window_start, order_volume, total_price, total_freight_value, total_weight_g
+    FROM SellerByStateDaily
+    ORDER BY seller_id ASC, customer_state ASC, window_start ASC;
