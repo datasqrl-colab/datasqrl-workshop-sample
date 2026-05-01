@@ -21,6 +21,7 @@
   },
   "test-runner": {
     "delay-sec": -1,
-    "required-checkpoints": 1
+    "required-checkpoints": 1,
+    "snapshot-folder": "snapshots/seller-analytics"
   }
 }

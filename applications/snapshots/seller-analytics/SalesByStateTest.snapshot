@@ -1,9 +1,8 @@
 {
   "data" : {
-    "SellerByStateDailyTest" : [ {
+    "SalesByStateTest" : [ {
       "seller_id" : "03bd479e1d9484cdb14104d3023f7321",
       "customer_state" : "MS",
-      "window_start" : "2018-07-24T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 119.9,
       "total_freight_value" : 20.99,
@@ -11,7 +10,6 @@
     }, {
       "seller_id" : "05a48cc8859962767935ab9087417fbb",
       "customer_state" : "RJ",
-      "window_start" : "2018-08-02T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 42.9,
       "total_freight_value" : 16.49,
@@ -19,7 +17,6 @@
     }, {
       "seller_id" : "1444c08e64d55fb3c25f0f09c07ffcf2",
       "customer_state" : "SP",
-      "window_start" : "2018-04-28T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 2749,
       "total_freight_value" : 69.74,
@@ -27,7 +24,6 @@
     }, {
       "seller_id" : "166e8f1381e09651983c38b1f6f91c11",
       "customer_state" : "RS",
-      "window_start" : "2017-07-25T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 39.9,
       "total_freight_value" : 15.1,
@@ -35,7 +31,6 @@
     }, {
       "seller_id" : "166e8f1381e09651983c38b1f6f91c11",
       "customer_state" : "SP",
-      "window_start" : "2017-08-21T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 38.9,
       "total_freight_value" : 15.1,
@@ -43,7 +38,6 @@
     }, {
       "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
       "customer_state" : "BA",
-      "window_start" : "2017-10-05T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 43.9,
       "total_freight_value" : 27.73,
@@ -51,23 +45,13 @@
     }, {
       "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
       "customer_state" : "GO",
-      "window_start" : "2017-11-29T00:00:00.000Z",
-      "order_volume" : 1,
-      "total_price" : 64.9,
-      "total_freight_value" : 25.29,
-      "total_weight_g" : 8333
-    }, {
-      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
-      "customer_state" : "GO",
-      "window_start" : "2018-01-10T00:00:00.000Z",
-      "order_volume" : 1,
-      "total_price" : 64.9,
-      "total_freight_value" : 25.29,
-      "total_weight_g" : 8333
+      "order_volume" : 2,
+      "total_price" : 129.8,
+      "total_freight_value" : 50.58,
+      "total_weight_g" : 16666
     }, {
       "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
       "customer_state" : "MG",
-      "window_start" : "2018-02-06T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 74.9,
       "total_freight_value" : 81.61,
@@ -75,11 +59,17 @@
     }, {
       "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
       "customer_state" : "MS",
-      "window_start" : "2018-05-06T00:00:00.000Z",
       "order_volume" : 1,
       "total_price" : 649.9,
       "total_freight_value" : 23.52,
       "total_weight_g" : 575
+    }, {
+      "seller_id" : "1b938a7ec6ac5061a66a3766e0e75f90",
+      "customer_state" : "RJ",
+      "order_volume" : 8,
+      "total_price" : 1164.2,
+      "total_freight_value" : 230.85,
+      "total_weight_g" : 45015
     } ]
   }
 }

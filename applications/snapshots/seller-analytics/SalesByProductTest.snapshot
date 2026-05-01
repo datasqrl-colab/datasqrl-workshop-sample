@@ -1,6 +1,6 @@
 {
   "data" : {
-    "SellerByProductTest" : [ {
+    "SalesByProductTest" : [ {
       "seller_id" : "03bd479e1d9484cdb14104d3023f7321",
       "product_id" : "6a83aaaaace0f050ef46ecf0fbb32854",
       "product_category_name" : "auto",

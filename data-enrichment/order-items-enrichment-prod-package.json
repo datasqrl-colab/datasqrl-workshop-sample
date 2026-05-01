@@ -1,0 +1,18 @@
+{
+  "version": "1",
+  "enabled-engines": ["kafka", "flink", "postgres", "vertx"],
+  "script": {
+    "main": "order-items-enrichment.sqrl",
+    "config": {
+      "environment": "prod"
+    }
+  },
+  "engines": {
+    "flink": {
+      "config": {
+        "execution.runtime-mode": "STREAMING",
+        "table.exec.source.idle-timeout": "30 s"
+      }
+    }
+  }
+}
