@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "enabled-engines": ["flink"],
+  "enabled-engines": ["flink", "postgres", "vertx"],
   "script": {
     "main": "order-items-enrichment.sqrl",
     "config": {

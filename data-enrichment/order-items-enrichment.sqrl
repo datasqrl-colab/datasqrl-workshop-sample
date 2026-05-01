@@ -1,6 +1,6 @@
 IMPORT catalog.ecommerce-sources.orders-{{environment}} AS orders;
 IMPORT catalog.ecommerce-sources.masterdata-{{environment}} AS masterdata;
-IMPORT connectors.sinks-{{environment}} AS sinks;
+IMPORT catalog.ecommerce-data-products.enriched_order_item-{{environment}} AS sinks;
 
 /* ========================================
    PART 1: Flatten Orders into Order Items
@@ -9,7 +9,7 @@ IMPORT connectors.sinks-{{environment}} AS sinks;
    into individual order item rows, preserving the order timestamp
    so it can be used for temporal joins downstream.
 */
-OrderItems := SELECT
+_OrderItems := SELECT
     e.order_id,
     e.customer_id,
     e.order_purchase_timestamp,
@@ -25,11 +25,12 @@ CROSS JOIN UNNEST(e.items) AS item;
 /* ========================================
    PART 2: Enrich with Customer & Product Data
    ========================================
-   Temporal joins capture the state of customer and product records
-   at the time of the order — ensuring historical accuracy even when
-   master data changes after the order was placed.
+   LEFT temporal joins so items without a matching customer or product
+   record are still included (nulls captured as invalid reasons).
+   invalid_reason captures the first data quality issue found — null
+   means the item is valid and safe to sink downstream.
 */
-EnrichedOrderItems := SELECT
+_EnrichedOrderItems := SELECT
     oi.order_id,
     oi.customer_id,
     oi.order_item_id,
@@ -46,19 +47,74 @@ EnrichedOrderItems := SELECT
     p.product_weight_g,
     p.product_length_cm,
     p.product_height_cm,
-    p.product_width_cm
-FROM OrderItems AS oi
-JOIN masterdata.Customers FOR SYSTEM_TIME AS OF oi.order_purchase_timestamp AS c
+    p.product_width_cm,
+    CASE
+        WHEN oi.product_id IS NULL THEN 'product_id is null'
+        WHEN oi.seller_id IS NULL THEN 'seller_id is null'
+        WHEN c.customer_zip_code_prefix IS NULL THEN 'customer record missing'
+        WHEN p.product_category_name IS NULL THEN 'product record missing'
+        WHEN oi.price < 0 THEN 'price is smaller than 0'
+        ELSE NULL
+    END AS invalid_reason
+FROM _OrderItems AS oi
+LEFT JOIN masterdata.Customers FOR SYSTEM_TIME AS OF oi.order_purchase_timestamp AS c
     ON oi.customer_id = c.customer_id
-JOIN masterdata.Products FOR SYSTEM_TIME AS OF oi.order_purchase_timestamp AS p
+LEFT JOIN masterdata.Products FOR SYSTEM_TIME AS OF oi.order_purchase_timestamp AS p
     ON oi.product_id = p.product_id;
 
 /* ========================================
-   PART 3: Export
+   PART 3: Export Valid Items
    ========================================
-   Export enriched order items to a JSONL file for downstream consumers.
+   Only sink items that pass all data quality checks (invalid_reason is null).
 */
-EXPORT EnrichedOrderItems TO sinks.EnrichedOrderItemsOutput;
+_ValidOrderItems := SELECT
+    order_id, customer_id, order_item_id, product_id, seller_id,
+    order_purchase_timestamp, shipping_limit_date, price, freight_value,
+    customer_zip, customer_city, customer_state,
+    product_category_name, product_weight_g, product_length_cm, product_height_cm, product_width_cm,
+    now() AS producer_timestamp
+FROM _EnrichedOrderItems WHERE invalid_reason IS NULL;
+
+EXPORT _ValidOrderItems TO sinks.EnrichedOrderItems;
+
+/* ========================================
+   PART 4: Invalid Orders
+   ========================================
+   Separate table for items that fail data quality checks, ordered
+   by purchase timestamp descending for easy triage of recent issues.
+*/
+/** Invalid order items that failed data quality checks, ordered by most recent first. */
+/*+no_query */
+InvalidOrders := SELECT * FROM _EnrichedOrderItems WHERE invalid_reason IS NOT NULL ORDER BY order_purchase_timestamp DESC;
+
+/* ========================================
+   PART 5: Invalid Orders Table Function
+   ========================================
+   Allows querying invalid orders after a specific point in time —
+   useful for incremental processing or alerting on recent issues.
+*/
+/** Returns invalid orders at or after the given timestamp. */
+InvalidOrdersAfterTime(ts TIMESTAMP(3)) := SELECT * FROM InvalidOrders WHERE order_purchase_timestamp >= :ts ORDER BY order_purchase_timestamp DESC;
+
+/* ========================================
+   PART 6: Orders Processed Per Day
+   ========================================
+   Cumulate window fires every 10 minutes accumulating toward a 1-day total.
+   DISTINCT ON window_start keeps only the final (most complete) firing per day,
+   giving one accurate row per calendar day once the window closes.
+*/
+_CumulativeOrderCounts := SELECT
+    window_start,
+    window_end,
+    window_time,
+    COUNT(*) AS order_item_count,
+    COUNT(DISTINCT order_id) AS distinct_order_count
+FROM TABLE(CUMULATE(TABLE _OrderItems, DESCRIPTOR(order_purchase_timestamp), INTERVAL '10' MINUTE, INTERVAL '1' DAY))
+GROUP BY window_start, window_end, window_time;
+
+/** Daily order processing summary: total items and distinct orders per day.
+    Deduplicates cumulate firings to keep only the final result per calendar day. */
+OrdersProcessedPerDay := DISTINCT _CumulativeOrderCounts ON window_start ORDER BY window_time DESC;
 
 /* ========================================
    TEST CASES
@@ -78,5 +134,23 @@ EnrichedOrderItemsTest := SELECT
     product_length_cm,
     product_height_cm,
     product_width_cm
-FROM EnrichedOrderItems
+FROM _EnrichedOrderItems
+WHERE invalid_reason IS NULL
 ORDER BY order_id ASC, order_item_id ASC;
+
+/*+test*/
+InvalidOrdersTest := SELECT
+    order_id,
+    order_item_id,
+    invalid_reason,
+    order_purchase_timestamp
+FROM InvalidOrders
+ORDER BY order_purchase_timestamp DESC, order_id, order_item_id;
+
+/*+test*/
+OrdersProcessedPerDayTest := SELECT
+    window_start,
+    order_item_count,
+    distinct_order_count
+FROM OrdersProcessedPerDay
+ORDER BY window_start;

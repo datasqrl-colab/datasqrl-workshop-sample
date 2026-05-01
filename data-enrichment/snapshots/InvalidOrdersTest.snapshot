@@ -1,0 +1,15 @@
+{
+  "data" : {
+    "InvalidOrdersTest" : [ {
+      "order_id" : "755a4d6ab201a238e51bc1d1ab18365a",
+      "order_item_id" : 1,
+      "invalid_reason" : "product record missing",
+      "order_purchase_timestamp" : "2018-08-12T22:59:48.000Z"
+    }, {
+      "order_id" : "48af7589aa4fbcb01531df8c9b510e91",
+      "order_item_id" : 1,
+      "invalid_reason" : "customer record missing",
+      "order_purchase_timestamp" : "2018-08-04T17:10:00.000Z"
+    } ]
+  }
+}
